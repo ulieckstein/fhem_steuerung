@@ -1,0 +1,32 @@
+#insert into fhem.cfg
+define notify_therme notify notify_therme {\
+my $therme_state = ReadingsVal("LampeAmbient", "state", "off");;\
+my $therme_needed = 0;;\
+my $radiators_idle = 0;;\
+my @radiators=devspec2array("TYPE=MAX");;\
+foreach(@radiators) {\
+  my $valve=ReadingsVal($_, "valveposition", "100");;\
+  if ($valve > 50) {\
+    $therme_needed=1\
+  }\
+  if ($valve < 20) {\
+    $radiators_idle++\
+  }\
+}\
+if($therme_needed != 0) {\
+  Log(3,"Therme benoetigt. Vorheriger Status: " . $therme_state);;\
+  fhem("set LampeAmbient on") if ($therme_state eq "off")\
+}\
+else {\
+  if ($radiators_idle == @radiators){\
+    Log(3,"Therme nicht benoetigt. Vorheriger Status: " . $therme_state);;\
+    fhem("set LampeAmbient off") if ($therme_state eq "on")\
+  }\
+  else {\
+    Log(3,"Therme Bedarf: " . $radiators_idle . " von " . @radiators . " Heizkörper geschlossen");;\
+  }\
+}\
+}
+
+
+define ThermeWatchdog at +*00:10:00 trigger notify_therme
