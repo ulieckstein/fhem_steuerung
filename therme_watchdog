@@ -3,9 +3,12 @@ define notify_therme notify notify_therme {\
 my $therme_state = ReadingsVal("LampeAmbient", "state", "off");;\
 my $therme_needed = 0;;\
 my $radiators_idle = 0;;\
+my $radiator_states = "";;\
 my @radiators=devspec2array("TYPE=MAX");;\
 foreach(@radiators) {\
   my $valve=ReadingsVal($_, "valveposition", "100");;\
+  my $alias=ReadingsVal($_, "alias", "unbekannt");;\
+  $radiator_states = $radiator_states . $alias . ": " . $valve . "% - ";;\
   if ($valve > 50) {\
     $therme_needed=1\
   }\
@@ -26,6 +29,7 @@ else {\
     Log(3,"Therme Bedarf: " . $radiators_idle . " von " . @radiators . " Heizkörper geschlossen");;\
   }\
 }\
+Log(3, $radiator_states);;\
 }
 
 
